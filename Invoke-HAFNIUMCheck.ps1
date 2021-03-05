@@ -155,7 +155,7 @@ function hash{
         $sysHashes = get-filehash $path -Algorithm SHA1
         foreach($sysHash in $sysHashes){
             if($hashes -contains $sysHash.hash){
-                $sysHash | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\HashesMatch.csv -Append 
+                $sysHash | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\HashMatch.csv -Append 
                 $sys = $sysHash.hash 
                 write-host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor Green "$sys Matched Known Actor Hashes"
                 }
