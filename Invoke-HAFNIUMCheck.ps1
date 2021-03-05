@@ -258,7 +258,7 @@ function sysinternals{
                         );
                     }
                 $($Namespace | ForEach-Object { "}" })
-    "@
+"@
 
             # Get a shortcut to the type:    
             $RegTools = ("{0}.advapi32" -f ($Namespace -join ".")) -as [type]
