@@ -167,10 +167,10 @@ function hash{
 # Compressed Files
 function exfilStage{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking for potential data staged for exfil..."
-    $out = (Get-ChildItem $env:systemdrive\ProgramData\*.zip, $env:systemdrive\ProgramData\*.7z, $env:systemdrive\ProgramData\*.rar  -ErrorAction SilentlyContinue).FullName
+    $out = Get-ChildItem $env:systemdrive\ProgramData\*.zip, $env:systemdrive\ProgramData\*.7z, $env:systemdrive\ProgramData\*.rar  -ErrorAction SilentlyContinue
     if($out){
             Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor Green "Potential Data Exfil Staging in the ProgramData Directory"
-            $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\CompressedFiles.txt 
+            $out | select fullname, CreationTimeUtc, LastWriteTimeUtc, length | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\CompressedFiles.txt 
     }
     else{
             Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "No Compressed Items within the ProgramData Directory"
