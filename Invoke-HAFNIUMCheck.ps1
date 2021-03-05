@@ -50,6 +50,7 @@
     .LINKS
         https://www.microsoft.com/security/blog/2021/03/02/hafnium-targeting-exchange-servers/
         https://www.volexity.com/blog/2021/03/02/active-exploitation-of-microsoft-exchange-zero-day-vulnerabilities/
+        https://us-cert.cisa.gov/ncas/alerts/aa21-062a
 
 #>
 
