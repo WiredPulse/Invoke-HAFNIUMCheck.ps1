@@ -394,8 +394,8 @@ function sysinternals{
     }
     
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking for the use of Procdump or PSExec..."
-    $out = (Get-childitem HKCU:\Software\sysinternals\p[r-s]*).pschildname
-    if(Get-childitem HKCU:\Software\sysinternals\p[r-s]*){
+    $out = (Get-childitem HKCU:\Software\sysinternals\p[r-s]* -ErrorAction SilentlyContinue).pschildname
+    if(Get-childitem HKCU:\Software\sysinternals\p[r-s]* -ErrorAction SilentlyContinue){
         Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor Green "Procdump or PSExec has been used on the system"
         Get-ChildItem HKCU:\Software\sysinternals | Get-RegWritetime | Select Name, LastWriteTime | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\SysInternals.txt    
     }
@@ -449,7 +449,7 @@ function zip{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "$env:SystemRoot\temp\$env:COMPUTERNAME-exch.zip has been created in $env:SystemRoot\temp"
     }
     catch {
-        Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-host "Could not zip the $env:SystemRoot\temp\$env:COMPUTERNAME-exch, please do it manually." -foregroundcolor red
+        Write-Host -ForegroundColor red "[+] " -NoNewline; Write-host "Could not zip the $env:SystemRoot\temp\$env:COMPUTERNAME-exch, please do it manually." -foregroundcolor red
     }
     Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Done!"
 }
@@ -475,3 +475,4 @@ sysinternals
 eventLogs
 sru
 zip
+pause
