@@ -102,12 +102,12 @@ function CVE-2021-26858{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving data for CVE-2021-26858..."
     try{
         $out = Get-EventLog -LogName Application -Source "MSExchange Unified Messaging" -EntryType Error -ErrorAction Stop | Where-Object { $_.Message -like "*System.InvalidCastException*" } 
-        $out | export-csv $env:SystemRoot\temp\$env:COMPUTERNAME-exch\EventLogs.csv
+        $out | export-csv $env:SystemRoot\temp\$env:COMPUTERNAME-exch\UnifiedMessaging.csv
         Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor Green "Suspicious data in MSExchange Unified Messaging Logs"
         }
     catch{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "No Applicable MSExchange Unified Messaging Logs Exist"
-        Write-Output "No Applicable Event Logs Exist" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ECPLogs.txt  
+        Write-Output "No Applicable Event Logs Exist" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\UnifiedMessaging.txt  
     }
     Remove-Variable out -ErrorAction SilentlyContinue
 }
