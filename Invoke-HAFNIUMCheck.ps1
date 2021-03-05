@@ -1,4 +1,4 @@
-﻿<#
+<#
     .SYNOPSIS  
         Collects data from Microsoft Exchange Servers that assist in indentifying if the system was exploited via CVEs 2021-26855, 26857, 26858, and 27065. Some
         analysis is automatically done while other parts requires analysis. 
@@ -184,7 +184,7 @@ function lsass{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking for potential LSASS dumps..."
     new-item -Path $env:SystemRoot\temp\$env:COMPUTERNAME-exch\dumps -ItemType Directory | out-null
 
-    $files = (Get-ChildItem c:\root, c:\windows\temp -File).FullName
+    $files = (Get-ChildItem c:\root, c:\windows\temp -ErrorAction SilentlyContinue -File).FullName
     foreach($file in $files){
     $byte = [Byte[]](Get-Content -Path $file -TotalCount 4 -Encoding Byte -ErrorAction SilentlyContinue) -join('')
         if($byte-eq 77687780){
@@ -206,21 +206,14 @@ function sysinternals{
         param(
             [Parameter(Mandatory=$true, ParameterSetName="ByKey", Position=0, ValueFromPipeline=$true)]
             [ValidateScript({ $_ -is [Microsoft.Win32.RegistryKey] })]
-            # Registry key object returned from Get-ChildItem or Get-Item. Instead of requiring the type to
-            # be [Microsoft.Win32.RegistryKey], validation has been moved into a [ValidateScript] parameter
-            # attribute. In PSv2, PS type data seems to get stripped from the object if the [RegistryKey]
-            # type is an attribute of the parameter.
             $RegistryKey,
             [Parameter(Mandatory=$true, ParameterSetName="ByPath", Position=0)]
-            # Path to a registry key
             [string] $Path
         )
 
         begin {
-            # Define the namespace (string array creates nested namespace):
             $Namespace = "CustomNamespace", "SubNamespace"
-
-            # Make sure type is loaded (this will only get loaded on first run):
+            $id = get-random
             Add-Type @"
                 using System; 
                 using System.Text;
@@ -228,7 +221,7 @@ function sysinternals{
                 $($Namespace | ForEach-Object {
                     "namespace $_ {"
                 })
-                    public class advapi32 {
+                    public class advapi32$id {
                         [DllImport("advapi32.dll", CharSet = CharSet.Auto)]
                         public static extern Int32 RegQueryInfoKey(
                             IntPtr hKey,
@@ -257,38 +250,27 @@ function sysinternals{
                             IntPtr hKey
                         );
                     }
-                $($Namespace | ForEach-Object { "}" })
-"@
-
-            # Get a shortcut to the type:    
+                $($Namespace | ForEach-Object { "}" } )
+"@   
             $RegTools = ("{0}.advapi32" -f ($Namespace -join ".")) -as [type]
         }
 
         process {
             switch ($PSCmdlet.ParameterSetName) {
                 "ByKey" {
-                    # Already have the key, no more work to be done :)
                 }
 
                 "ByPath" {
-                    # We need a RegistryKey object (Get-Item should return that)
                     $Item = Get-Item -Path $Path -ErrorAction Stop
-
-                    # Make sure this is of type [Microsoft.Win32.RegistryKey]
                     if ($Item -isnot [Microsoft.Win32.RegistryKey]) {
                         throw "'$Path' is not a path to a registry key!"
                     }
                     $RegistryKey = $Item
                 }
             }
-
-            # Initialize variables that will be populated:
-            $ClassLength = 255 # Buffer size (class name is rarely used, and when it is, I've never seen 
-                                # it more than 8 characters. Buffer can be increased here, though. 
-            $ClassName = New-Object System.Text.StringBuilder $ClassLength  # Will hold the class name
+            $ClassLength = 255 
+            $ClassName = New-Object System.Text.StringBuilder $ClassLength 
             $LastWriteTime = $null
-
-            # Get a handle to our key via RegOpenKeyEx (PSv3 and higher could use the .Handle property off of registry key):
             $KeyHandle = New-Object IntPtr
 
             if ($RegistryKey.Name -notmatch "^(?<hive>[^\\]+)\\(?<subkey>.+)$") {
@@ -299,9 +281,6 @@ function sysinternals{
             $HiveName = $matches.hive -replace "(^HKEY_|_|:$)", ""  # Get hive in a format that [RegistryHive] enum can handle
             $SubKey = $matches.subkey
 
-            # Get hive. $HiveName should contain a valid MS.Win32.RegistryHive enum, but it will be in all caps. It seems that
-            # [enum]::IsDefined is case sensitive, so that won't work. There's an awesome static method [enum]::TryParse, but it
-            # appears that it was introduced in .NET 4. So, I'm just wrapping it in a try {} block:
             try {
                 $Hive = [Microsoft.Win32.RegistryHive] $HiveName
             }
@@ -346,8 +325,6 @@ function sysinternals{
 
                 0 { # Success
                     $LastWriteTime = [datetime]::FromFileTime($LastWriteTime)
-
-                    # Add properties to object and output them to pipeline
                     $RegistryKey | 
                         Add-Member -MemberType NoteProperty -Name LastWriteTime -Value $LastWriteTime -Force -PassThru |
                         Add-Member -MemberType NoteProperty -Name ClassName -Value $ClassName.ToString() -Force -PassThru
@@ -363,12 +340,9 @@ function sysinternals{
                     throw "Unknown error encountered (error code $_)"
                 }
             }
-
-            # Closing key:
             Write-Verbose ("Closing handle to '{0}' using RegCloseKey" -f $RegistryKey.Name)
             switch ($RegTools::RegCloseKey($KeyHandle)) {
                 0 {
-                    # Success, no action required
                     Write-Verbose "  -> Success!"
                 }
                 default {
@@ -438,6 +412,14 @@ function zip{
     }
     Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Done!"
 }
+
+write-host -foregroundcolor cyan " _____                _               _   _   ___  ______ _   _ _____ _   ____  ________ _               _    "
+write-host -foregroundcolor cyan "|_   _|              | |             | | | | / _ \ |  ___| \ | |_   _| | | |  \/  /  __ \ |             | |   "
+write-host -foregroundcolor cyan "  | | _ ____   _____ | | _____ ______| |_| |/ /_\ \| |_  |  \| | | | | | | | .  . | /  \/ |__   ___  ___| | __"
+write-host -foregroundcolor cyan "  | || '_ \ \ / / _ \| |/ / _ \______|  _  ||  _  ||  _| | . `  | | | | | | | |\/| | |   | '_ \ / _ \/ __| |/ /"
+write-host -foregroundcolor cyan " _| || | | \ V / (_) |   <  __/      | | | || | | || |   | |\  |_| |_| |_| | |  | | \__/\ | | |  __/ (__|   < "
+write-host -foregroundcolor cyan " \___/_| |_|\_/ \___/|_|\_\___|      \_| |_/\_| |_/\_|   \_| \_/\___/ \___/\_|  |_/\____/_| |_|\___|\___|_|\_\"
+write-host -foregroundcolor yellow "                                                                                                   @WiredPulse"`n
 
 dirCreate
 version
