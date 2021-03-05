@@ -11,3 +11,4 @@ analysis is automatically done while other parts requires analysis. The data tha
 Some analysis will be done for the user during execution based on what is known about the actor and resident artifacts. A level of manual analysis is needed for items such as the PowerShell and Process Creation eventlogs. 
 
 # Screenshot
+![Alt text](https://raw.githubusercontent.com/WiredPulse/Invoke-HAFNIUMCheck.ps1/main/Screenshots/Image.png?raw=true "Optional Title")
