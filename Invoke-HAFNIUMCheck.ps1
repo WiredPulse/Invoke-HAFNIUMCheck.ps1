@@ -413,9 +413,9 @@ function eventLogs{
 
 # Retrieving SRU DB, if present
 function sru{
-    write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking if SRU DB exists..."
+    write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking if SRU DB Exists..."
     if(test-path "C:\Windows\system32\sru\srudb.dat"){
-        Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Copying SRU DB"
+        Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Copying SRU DB (another tool will be needed to read this)"
         copy-item "C:\Windows\system32\sru\srudb.dat" "$env:SystemRoot\temp\$env:COMPUTERNAME-exch\"
     }
     else{
