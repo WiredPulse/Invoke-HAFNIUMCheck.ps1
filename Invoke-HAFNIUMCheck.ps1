@@ -373,15 +373,15 @@ function eventLogs{
         }
     catch{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "No PowerShell Logs Exist"
-        Write-Output "No Applicable Event Logs Exist" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ECPLogs.txt  
+        Write-Output "No Applicable Event Logs Exist" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\PSLog.txt  
     }
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving Process Creation logs..."
     try{
-        $out = Get-WinEvent -FilterHashtable @{logname='security'; id='4688'} -ErrorAction stop | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\PSLog.csv -Append
+        $out = Get-WinEvent -FilterHashtable @{logname='security'; id='4688'} -ErrorAction stop | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ProcessCreation.csv -Append
         }
     catch{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "No Process Creation Events Exist"
-        Write-Output "No Applicable Event Logs Exist" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ECPLogs.txt  
+        Write-Output "No Applicable Event Logs Exist" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ProcessCreation.txt  
     }
 }
 
