@@ -79,26 +79,33 @@ function version{
 function CVE-2021-26855{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving data for CVE-2021-26855..."
     if(test-path $env:ExchangeInstallPath\V15\Logging\HttpProxy){
-        $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\V15\Logging\HttpProxy" -Filter '*.log').FullName | Where-Object {  $_.AuthenticatedUser -eq '' -and $_.AnchorMailbox -like 'ServerInfo~*/*' } | select DateTime, AnchorMailbox
-        if($out){
-            $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\HTTProxy.txt
-            Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor green "Suspicious Data in HTTP Proxy Log"
-        }
-        else{
-            Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor yellow "System Not Affected Based on the HTTP Proxy Log"
-            Write-Output "System Not affected" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy.txt
+        foreach ($folder in get-ChildItem "${env:ExchangeInstallPath}V15\Logging\HttpProxy"){
+            write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking $folder Logs"
+            $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\V15\Logging\HttpProxy\" -Filter '*.log').FullName | Where-Object {  $_.AuthenticatedUser -eq '' -and $_.AnchorMailbox -like 'ServerInfo~*/*' } | select DateTime, AnchorMailbox
+            if($out){
+                $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\HTTProxy.txt
+                Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor green "Suspicious Data in HTTP Proxy Log"
+            }
+            else{
+                Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor yellow "System Not Affected Based on the HTTP Proxy Log"
+                Write-Output "System Not affected" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy.txt
+            }
         }
     }
+
     elseif(test-path $env:ExchangeInstallPath\Logging\HttpProxy){
-        $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\Logging\HttpProxy" -Filter '*.log').FullName | Where-Object {  $_.AuthenticatedUser -eq '' -and $_.AnchorMailbox -like 'ServerInfo~*/*' } | select DateTime, AnchorMailbox
-        if($out){
-            $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy.txt
-            Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor green "Suspicious Data in HTTP Proxy Log"
-        }
-        else{
-            Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "System Not Affected Based on the HTTP Proxy"
-            Write-Output "System Not affected" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy.txt
-        }    
+        foreach ($folder in get-ChildItem "${env:ExchangeInstallPath}Logging\HttpProxy"){
+            write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking $folder Logs"
+            $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\Logging\HttpProxy\$folder" -Filter '*.log').FullName | Where-Object {  $_.AuthenticatedUser -eq '' -and $_.AnchorMailbox -like 'ServerInfo~*/*' } | select DateTime, AnchorMailbox
+            if($out){
+                $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy_$folder.txt
+                Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor green "Suspicious Data in HTTP Proxy $folder Log"
+            }
+            else{
+                Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "System Not Affected Based on the HTTP Proxy"
+                Write-Output "System Not affected" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy_$folder.txt
+            } 
+        }   
     }
     else{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "HTTP Proxy Log Doesn't Exist"
