@@ -80,15 +80,15 @@ function CVE-2021-26855{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving data for CVE-2021-26855..."
     if(test-path $env:ExchangeInstallPath\V15\Logging\HttpProxy){
         foreach ($folder in get-ChildItem "${env:ExchangeInstallPath}V15\Logging\HttpProxy"){
-            write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking $folder Logs"
-            $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\V15\Logging\HttpProxy\" -Filter '*.log').FullName | Where-Object {  $_.AuthenticatedUser -eq '' -and $_.AnchorMailbox -like 'ServerInfo~*/*' } | select DateTime, AnchorMailbox
+            write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking $folder Logs"           
+            $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\V15\Logging\HttpProxy" -Filter '*.log').FullName | Where-Object { $_.AnchorMailbox -like 'ServerInfo~*/*' -or $_.BackEndCookie -like 'Server~*/*~*'} | select DateTime, AnchorMailbox, UrlStem, RoutingHint, ErrorCode, TargetServerVersion, BackEndCookie, GenericInfo, GenericErrors, UrlHost, Protocol, Method, RoutingType, AuthenticationType, ServerHostName, HttpStatus, BackEndStatus, UserAgent
             if($out){
-                $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\HTTProxy.txt
+                $out | export-csv $env:SystemRoot\temp\$env:COMPUTERNAME-exch\HTTProxy_$folder.csv
                 Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor green "Suspicious Data in HTTP Proxy Log"
             }
             else{
                 Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor yellow "System Not Affected Based on the HTTP Proxy Log"
-                Write-Output "System Not affected" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy.txt
+                Write-Output "System Not affected" | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy_$folder.txt
             }
         }
     }
@@ -96,9 +96,9 @@ function CVE-2021-26855{
     elseif(test-path $env:ExchangeInstallPath\Logging\HttpProxy){
         foreach ($folder in get-ChildItem "${env:ExchangeInstallPath}Logging\HttpProxy"){
             write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking $folder Logs"
-            $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\Logging\HttpProxy\$folder" -Filter '*.log').FullName | Where-Object {  $_.AuthenticatedUser -eq '' -and $_.AnchorMailbox -like 'ServerInfo~*/*' } | select DateTime, AnchorMailbox
+            $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\Logging\HttpProxy" -Filter '*.log').FullName | Where-Object { $_.AnchorMailbox -like 'ServerInfo~*/*' -or $_.BackEndCookie -like 'Server~*/*~*'} | select DateTime, AnchorMailbox, UrlStem, RoutingHint, ErrorCode, TargetServerVersion, BackEndCookie, GenericInfo, GenericErrors, UrlHost, Protocol, Method, RoutingType, AuthenticationType, ServerHostName, HttpStatus, BackEndStatus, UserAgent
             if($out){
-                $out | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy_$folder.txt
+                $out | export-csv $env:SystemRoot\temp\$env:COMPUTERNAME-exch\httpproxy_$folder.csv
                 Write-Host -ForegroundColor yellow "[+] " -NoNewline; Write-Host -ForegroundColor green "Suspicious Data in HTTP Proxy $folder Log"
             }
             else{
@@ -418,7 +418,7 @@ function sysinternals{
 function eventLogs{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving PowerShell logs..."
     try{
-        $out = Get-WinEvent -LogName "Microsoft-Windows-PowerShell/Operational" -ErrorAction stop | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\PSLog.csv -Append
+        $out = Get-WinEvent -LogName "Microsoft-Windows-PowerShell/Operational" -ErrorAction stop | export-csv $env:SystemRoot\temp\$env:COMPUTERNAME-exch\PSLog.csv -Append
         }
     catch{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "No PowerShell Logs Exist"
@@ -426,7 +426,7 @@ function eventLogs{
     }
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving Process Creation logs..."
     try{
-        $out = Get-WinEvent -FilterHashtable @{logname='security'; id='4688'} -ErrorAction stop | out-file $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ProcessCreation.csv -Append
+        $out = Get-WinEvent -FilterHashtable @{logname='security'; id='4688'} -ErrorAction stop | export-csv $env:SystemRoot\temp\$env:COMPUTERNAME-exch\ProcessCreation.csv -Append
         }
     catch{
         Write-Host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "No Process Creation Events Exist"
