@@ -79,7 +79,7 @@ function version{
 function CVE-2021-26855{
     write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Retrieving data for CVE-2021-26855..."
     if(test-path $env:ExchangeInstallPath\V15\Logging\HttpProxy){
-        foreach ($folder in get-ChildItem "${env:ExchangeInstallPath}V15\Logging\HttpProxy"){
+        foreach ($folder in get-ChildItem "${env:ExchangeInstallPath}\V15\Logging\HttpProxy"){
             write-host -ForegroundColor cyan "[+] " -NoNewline; Write-Host -ForegroundColor Green "Checking $folder Logs"           
             $out = Import-Csv -Path (Get-ChildItem -Recurse -Path "$env:ExchangeInstallPath\V15\Logging\HttpProxy" -Filter '*.log').FullName | Where-Object { $_.AnchorMailbox -like 'ServerInfo~*/*' -or $_.BackEndCookie -like 'Server~*/*~*'} | select DateTime, AnchorMailbox, UrlStem, RoutingHint, ErrorCode, TargetServerVersion, BackEndCookie, GenericInfo, GenericErrors, UrlHost, Protocol, Method, RoutingType, AuthenticationType, ServerHostName, HttpStatus, BackEndStatus, UserAgent
             if($out){
